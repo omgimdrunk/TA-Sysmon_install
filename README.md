@@ -1,6 +1,6 @@
 ﻿# TA-Sysmon-Install
 
-This is a Splunk Technology addon that will allow you to install sysmon via a splunk scriptied input to get sysmon data into splunk.
+This is a Splunk Technology addon that will allow you to install sysmon via a splunk scripted input to get sysmon data into splunk.
 
 You will need to use the Sysmon TA written by Dave Herald to actually collect the sysmon data (https://github.com/splunk/TA-microsoft-sysmon)
 
