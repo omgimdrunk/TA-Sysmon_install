@@ -255,7 +255,7 @@
 			<ParentCommandLine condition="end with">"-outc=C:\ProgramData\Dell\CommandUpdate\inventory.xml" "-logc=C:\ProgramData\Dell\CommandUpdate\scanerrs.xml" "-lang=en" "-enc=UTF-16" </ParentCommandLine>
 		
 			<!-- SECTION: Splunk-->
-				<!--COMMENT: without omitting the splunkd image from a universal forwarder or full installation, you will get a log loop from connection logging, logging everytime the forwarder sends logs to an indexer on 9997, and then logging the connection it made to send the log, over and over, its turtles all the way down.-->
+			<!--COMMENT: without omitting the splunkd image from a universal forwarder or full installation, you will get a log loop from connection logging, logging everytime the forwarder sends logs to an indexer on 9997, and then logging the connection it made to send the log, over and over, its turtles all the way down.-->
 			<ParentImage condition="is">C:\Program Files\SplunkUniversalForwarder\bin\splunkd.exe</ParentImage><!--Splunk Universal Forwarder-->
 			<ParentImage condition="is">C:\Program Files\Splunk\bin\splunkd.exe</ParentImage><!--Splunk daemon-->
 			<ParentImage condition="is">C:\Program Files (x86)\SplunkUniversalForwarder\bin\splunkd.exe</ParentImage><!--Splunk Universal Forwarder-->
