@@ -1,4 +1,13 @@
-﻿# Sysmon Threat Intelligence Configuration #
+﻿#TA-Sysmon-Install
+
+This is a Splunk Technology addon that will allow you to install sysmon via a splunk scriptied input to get sysmon data into splunk.
+
+You will need to use the Sysmon TA written by Dave Herald to actually collect the sysmon data (https://github.com/splunk/TA-microsoft-sysmon)
+
+The configuration for sysmon pushed by this will ignore tracking connections for ParentImage splunkd.exe
+
+
+# Sysmon Threat Intelligence Configuration #
 
 This is a Microsoft Sysinternals Sysmon configuration file template with default high-quality event tracing.
 
