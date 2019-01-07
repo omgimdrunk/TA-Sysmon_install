@@ -1,4 +1,4 @@
-﻿#TA-Sysmon-Install
+﻿# TA-Sysmon-Install
 
 This is a Splunk Technology addon that will allow you to install sysmon via a splunk scriptied input to get sysmon data into splunk.
 
