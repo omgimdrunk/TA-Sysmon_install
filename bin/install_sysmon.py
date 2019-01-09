@@ -3,8 +3,6 @@ import os
 import requests
 from datetime import datetime
 
-os.environ["hour"] =%time:~0,2%
-os.environ["minute"]=%time:~3,2%
 installPath = "C:\\ProgramData\\sysmon"
 access_rights = 0o755
 sysMonURL = "https://live.sysinternals.com/Sysmon64.exe"
@@ -18,6 +16,7 @@ try:
     os.mkdir(installPath, access_rights)
 except OSError:  
     print ("Creation of the directory %s failed" % path)
+    sys.exit()
 else:  
     print ("Successfully created the directory %s " % path)
 
@@ -25,7 +24,7 @@ os.chdir(installPath)
 
 
 rsysmon=requests.get(sysMonURL, allow_redirects=True, show_warnings=False)
-open (installPath+'sysmon64.exe', 'wb').write(rsysmon.content)
+open (installPath+'\\sysmon64.exe', 'wb').write(rsysmon.content)
 print ('[+] Downloading Sysmon...')
 
 rsysmonconfig=requests.get(sysMonConfigURL, allow_redirects=True, show_warnings=False)
