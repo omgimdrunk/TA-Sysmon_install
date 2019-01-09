@@ -1,7 +1,7 @@
 #!/bin/env python
 import os
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
 
 installPath = "C:\\ProgramData\\sysmon"
 access_rights = 0o755
@@ -9,16 +9,16 @@ sysMonURL = "https://live.sysinternals.com/Sysmon64.exe"
 sysMonConfigURL = "https://raw.githubusercontent.com/f8al/TA-Sysmon_install/master/etc/sysmonconfig-export.xml"
 sysMonUpdaterURL = "https://raw.githubusercontent.com/f8al/TA-Sysmon_install/master/Auto_Update.bat"
 time = datetime.now()
-taskTime = time + datetime.timedelta(minutes = 2)
-datetime.strptime(tasktime, '%H:%M')
+tTime = time + timedelta(minutes = 2)
+tTime= datetime.strftime(tTime, '%H:%M')
 
 try:  
     os.mkdir(installPath, access_rights)
 except OSError:  
-    print ("Creation of the directory %s failed" % path)
-    sys.exit()
+    print ("Creation of the directory %s failed" % installPath)
+    os.sys.exit()
 else:  
-    print ("Successfully created the directory %s " % path)
+    print ("Successfully created the directory %s " % installPath)
 
 os.chdir(installPath)
 
