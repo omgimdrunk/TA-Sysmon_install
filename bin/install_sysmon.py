@@ -160,6 +160,12 @@ if __name__ == "__main__":
             sys.stdout.write('Completed {}\n'.format(runit.saveas))
 
 
+    exec_sysmon = SchTasksHNDL(SYSMON)
+    try:
+        exec_sysmon.exec()
+    except Exception as E:
+        sys.stderr.write(str(E))
+        raise E
 
     exec_sysmonupdate = SchTasksHNDL(SYSMONUPDATER, add_seconds=120)
     try:
@@ -168,9 +174,3 @@ if __name__ == "__main__":
         sys.stderr.write(str(E))
         raise E
 
-    exec_sysmon = SchTasksHNDL(SYSMON)
-    try:
-        exec_sysmon.exec()
-    except Exception as E:
-        sys.stderr.write(str(E))
-        raise E
