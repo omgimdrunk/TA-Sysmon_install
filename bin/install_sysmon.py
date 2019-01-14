@@ -7,61 +7,45 @@ from datetime import timedelta, datetime
 import time
 from subprocess import Popen, PIPE
 from hashlib import sha256
-'''
-λ sha256sum.exe "Sysmon64.exe"
-e39520fb0bb6b1ae408bf4b7b1471d32753ef8b31191d4efe4ca4ae14efc3726 *Sysmon64.exe
-open (installPath+'\\', 'wb').write(rsysmon.content)
-print ('[+] Downloading Sysmon...')
-rsysmonconfig=requests.get(sysMonConfigURL, allow_redirects=True, show_warnings=False)
-open (installPath+'\\', 'wb').write(rsysmonconfig.content)
-print ('[+] Downloading Sysmon config...')
-rsymonupdate=requests.get(sysMonUpdaterURL, allow_redirects=True, show_warnings=False)
-open (installPath+'\\', 'wb').write(rsysmonconfig.content)
-print ('[+] Downloading Sysmon config...')
-'''
-
 
 
 class SYSMON:
     url = "https://live.sysinternals.com/Sysmon64.exe"
     saveas = 'sysmon64.exe'
+    saveto = os.path.join('C:', 'ProgramData', 'sysmon')
     shasum = 'e39520fb0bb6b1ae408bf4b7b1471d32753ef8b31191d4efe4ca4ae14efc3726'
+    CMD = [
+        "{FILE} -accepteula -i sysmonconfig-export.xml",
+        "sc failure Sysmon actions= restart/10000/restart/10000// reset= 120"
+        ]
+
 
 class SYSMONCONFIG:
     url = "https://raw.githubusercontent.com/f8al/TA-Sysmon_install/master/etc/sysmonconfig-export.xml"
     saveas = 'sysmonconfig-export.xml'
+    saveto = os.path.join('C:', 'ProgramData', 'sysmon')
 
 
 class SYSMONUPDATER:
     url = "https://raw.githubusercontent.com/f8al/TA-Sysmon_install/master/Auto_Update.bat"
     saveas = 'Auto_Update.bat'
+    saveto = os.path.join('C:', 'ProgramData', 'sysmon')
+    CMD = [
+        "SchTasks /Create /RU SYSTEM /RL HIGHEST /SC HOURLY" +
+        "/TN Update_Sysmon_Rules /TR \"{FILE}\" /F /ST {TIME}"
+        ]
 
 
 class SysmonHNDL:
     def __init__(self):
-
-        self.install_root = 'C:'
-        self.install_path = os.path.join(self.install_root, 'ProgramData', 'sysmon')
         self.access_rights = 0o755
 
-        self._time = self._t_now()
-        self._chk_path()
-
-    def _chk_path(self):
-
+    def _chk_path(self, _path):
         try:
-            os.mkdir(self.install_path, self.access_rights)
-        except Exception as E:
+            os.mkdir(_path, self.access_rights)
+        except:
             pass
-
         return 0
-
-    def _t_now(self):
-        _t = datetime.now()
-        _t = _t + timedelta(minutes=2)
-        print(_t)
-        #datetime.strptime(_t, '%H:%M')
-        return _t
 
     @staticmethod
     def chk_hash(data, comp_hash):
@@ -73,27 +57,24 @@ class SysmonHNDL:
         else:
             raise KeyError('Hash missmatch {}, {}'.format(hsh, comp_hash))
 
-    @staticmethod
-    def exec(*cmds):
-        _sp = Popen(cmds, stdout=PIPE, stdin=PIPE, stderr=PIPE)
-
-        while _sp.poll() is None:
-            time.sleep(.5)
-        stat, err = _sp.communicate()
-        if err:
-            raise Exception(err)
+    def _mod_file(self, _fname, _fpath, _fdata):
+        try:
+            self._chk_path(_fpath)
+        except:
+            raise
         else:
-            return stat
+            if not os.path.exists(_fpath):
+                raise NotADirectoryError(_fpath)
 
-    def _mod_file(self, _fname, _fdata):
-        with open (os.path.join(self.install_path, _fname), 'wb') as sysmon:
-            try:
-                sysmon.write(_fdata.content)
-            except Exception as E:
-                sys.stdout.write(str(E))
-                raise E
-            else:
-                sys.stdout.write('[+] Downloading {}\n'.format(_fname))
+            with open (os.path.join(_fpath, _fname), 'wb') as sysmon:
+                try:
+                    sysmon.write(_fdata.content)
+                except Exception as E:
+                    sys.stdout.write(str(E))
+                    raise E
+                else:
+                    sys.stdout.write('[+] Downloading {}\n'.format(_fname))
+                    return
 
     def pull_url(self, sys_obj):
         rsysmon = requests.get(sys_obj.url, allow_redirects=True)
@@ -103,14 +84,14 @@ class SysmonHNDL:
         except:
             pass
         else:
-            hshchk =  self.chk_hash(rsysmon.content, shasum)
+            hshchk = self.chk_hash(rsysmon.content, shasum)
             if hshchk[0] != 0:
                 sys.stdout.write(str(hshchk))
                 sys.stdout.flush()
                 sys.exit()
 
         try:
-            self._mod_file(os.path.join(self.install_path, sys_obj.saveas), rsysmon)
+            self._mod_file(sys_obj.saveas, sys_obj.saveto, rsysmon)
         except Exception as E:
             raise E
         else:
@@ -119,28 +100,77 @@ class SysmonHNDL:
 
 
 
+class SchTasksHNDL:
+    def __init__(self,  sysobj, add_seconds: int=0):
+
+        self.add_time = add_seconds
+        self.sysobj = sysobj
+        self.task_time = self._t_now()
+
+        self.tags = {
+                    '{TIME}' : { 'TIME' : self.task_time },
+                    '{FILE}' : { 'FILE' : os.path.join(self.sysobj.saveto, self.sysobj.saveas) }
+                    }
+
+    def _t_now(self):
+        _t = datetime.now()
+        _later = _t + timedelta(seconds=self.add_time)
+        return _later.strftime('%H:%M')
+
+    def _parse_cmd(self):
+        try:
+            for cmd in self.sysobj.CMD:
+                _mods = dict()
+                for key in self.tags.keys():
+                    if key in cmd:
+                        _mods.update(self.tags[key])
+
+                yield cmd.format(**_mods)
+        except:
+            raise
+
+    def exec(self):
+
+        for cmd in self._parse_cmd():
+            _call = cmd.split(' ')
+
+            _sp = Popen(_call, stdout=PIPE, stdin=PIPE, stderr=PIPE)
+
+            while _sp.poll() is None:
+                time.sleep(.5)
+            stat, err = _sp.communicate()
+            if err:
+                sys.stderr.write(str(err))
+                raise Exception(err)
+            else:
+                return stat
 
 
+if __name__ == "__main__":
 
-my_sysmon = SysmonHNDL()
+    sysmon_wget = SysmonHNDL()
 
-for runit in [SYSMON, SYSMONCONFIG, SYSMONUPDATER]:
+    for runit in [SYSMON, SYSMONCONFIG, SYSMONUPDATER]:
+        try:
+            sysmon_wget.pull_url(runit)
+        except Exception as E:
+            sys.stderr.write(str(E))
+            raise E
+        else:
+            sys.stdout.write('Completed {}\n'.format(runit.saveas))
 
+
+    exec_sysmon = SchTasksHNDL(SYSMON)
     try:
-        my_sysmon.pull_url(runit)
+        exec_sysmon.exec()
     except Exception as E:
-        print(E)
-    else:
-        sys.stdout.write('Completed {}\n'.format(runit.saveas))
+        sys.stderr.write(str(E))
+        raise E
 
+    exec_sysmonupdate = SchTasksHNDL(SYSMONUPDATER, add_seconds=120)
+    try:
+        exec_sysmonupdate.exec()
+    except Exception as E:
+        sys.stderr.write(str(E))
+        raise E
 
-stat = my_sysmon.exec([os.path.join(my_sysmon.install_path, 'sysmon64.exe'), '-accepteula', '-i', 'sysmonconfig-export.xml'])
-if type(stat) == Exception:
-    sys.stdout.write('FAIL')
-    sys.exit()
-else:
-
-# os.system('sc failure Sysmon actions= restart/10000/restart/10000// reset= 120')
-# print('[+] Sysmon Successfully Installed!')
-# print('[+] Creating Auto Update Task set to Hourly..')
-# os.system('SchTasks /Create /RU SYSTEM /RL HIGHEST /SC HOURLY /TN Update_Sysmon_Rules /TR '+installPath+'Auto_Update.bat /F /ST ' + taskTime)
