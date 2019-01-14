@@ -12,7 +12,7 @@ from hashlib import sha256
 class SYSMON:
     url = "https://live.sysinternals.com/Sysmon64.exe"
     saveas = 'sysmon64.exe'
-    saveto = os.path.join('C:', 'ProgramData', 'sysmon')
+    saveto = os.path.join('C:\\', 'ProgramData', 'sysmon')
     shasum = 'e39520fb0bb6b1ae408bf4b7b1471d32753ef8b31191d4efe4ca4ae14efc3726'
     CMD = [
         "{FILE} -accepteula -i sysmonconfig-export.xml",
@@ -23,13 +23,13 @@ class SYSMON:
 class SYSMONCONFIG:
     url = "https://raw.githubusercontent.com/f8al/TA-Sysmon_install/master/etc/sysmonconfig-export.xml"
     saveas = 'sysmonconfig-export.xml'
-    saveto = os.path.join('C:', 'ProgramData', 'sysmon')
-
+    saveto = os.path.join('C:\\', 'ProgramData', 'sysmon')
+    print(saveto)
 
 class SYSMONUPDATER:
-    url = "https://raw.githubusercontent.com/f8al/TA-Sysmon_install/master/update_config.bat"
-    saveas = 'update_config.bat'
-    saveto = os.path.join('C:', 'ProgramData', 'sysmon')
+    url = "https://raw.githubusercontent.com/f8al/TA-Sysmon_install/master/Auto_Update.bat"
+    saveas = 'Auto_Update.bat'
+    saveto = os.path.join('C:\\', 'ProgramData', 'sysmon')
     CMD = [
         "SchTasks /Create /RU SYSTEM /RL HIGHEST /SC HOURLY" +
         "/TN Update_Sysmon_Rules /TR \"{FILE}\" /F /ST {TIME}"
@@ -41,11 +41,11 @@ class SysmonHNDL:
         self.access_rights = 0o755
 
     def _chk_path(self, _path):
+        print('making {}'.format(_path))
         try:
-            os.mkdir(_path, self.access_rights)
+            os.mkdir(_path. self.access_rights)
         except:
             pass
-        return 0
 
     @staticmethod
     def chk_hash(data, comp_hash):
@@ -58,15 +58,13 @@ class SysmonHNDL:
             raise KeyError('Hash missmatch {}, {}'.format(hsh, comp_hash))
 
     def _mod_file(self, _fname, _fpath, _fdata):
-        try:
             self._chk_path(_fpath)
-        except:
-            raise
-        else:
+
             if not os.path.exists(_fpath):
                 raise NotADirectoryError(_fpath)
 
             with open (os.path.join(_fpath, _fname), 'wb') as sysmon:
+                print(os.path.join(_fpath, _fname))
                 try:
                     sysmon.write(_fdata.content)
                 except Exception as E:
@@ -133,7 +131,7 @@ class SchTasksHNDL:
 
         for cmd in self._parse_cmd():
             _call = cmd.split(' ')
-
+            print(_call)
             _sp = Popen(_call, stdout=PIPE, stdin=PIPE, stderr=PIPE)
 
             while _sp.poll() is None:
@@ -173,4 +171,5 @@ if __name__ == "__main__":
     except Exception as E:
         sys.stderr.write(str(E))
         raise E
+
 
