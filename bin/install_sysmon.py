@@ -27,8 +27,8 @@ class SYSMONCONFIG:
 
 
 class SYSMONUPDATER:
-    url = "https://raw.githubusercontent.com/f8al/TA-Sysmon_install/master/Auto_Update.bat"
-    saveas = 'Auto_Update.bat'
+    url = "https://raw.githubusercontent.com/f8al/TA-Sysmon_install/master/update_config.bat"
+    saveas = 'update_config.bat'
     saveto = os.path.join('C:', 'ProgramData', 'sysmon')
     CMD = [
         "SchTasks /Create /RU SYSTEM /RL HIGHEST /SC HOURLY" +
